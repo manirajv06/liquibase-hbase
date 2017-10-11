@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet author="mani" id="1" dbms="Hbase">
+        <sql>
+            CREATE TABLE IF NOT EXISTS TEST_HBASE.hbase_test_table1(id INTEGER NOT NULL PRIMARY KEY, idd INTEGER, comment VARCHAR(255));
+        </sql>
+        <sqlFile encoding="utf8"
+            path="complex_type.hql"
+            relativeToChangelogFile="true"/>
+
+        <rollback>
+            DROP TABLE TEST_HBASE.hbase_test_table1;
+            DROP TABLE TEST_HBASE.hbase_test_table11;
+        </rollback>
+    </changeSet>
+</databaseChangeLog>
