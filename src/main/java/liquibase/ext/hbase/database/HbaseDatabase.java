@@ -21,6 +21,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
+import liquibase.CatalogAndSchema;
 import liquibase.database.AbstractJdbcDatabase;
 import liquibase.database.DatabaseConnection;
 import liquibase.database.ObjectQuotingStrategy;
@@ -82,6 +83,8 @@ public class HbaseDatabase extends AbstractJdbcDatabase {
 	}
 	
 
+	
+	
 	@Override
 	public String getDefaultDriver(String url) {
 	  if (url.startsWith(prefix)) {
@@ -110,10 +113,16 @@ public class HbaseDatabase extends AbstractJdbcDatabase {
     return "current_time()";
   }
 
+  /*
+  @Override
+  public String getDefaultCatalogName() {
+    return "";
+  }*/
+  
   @Override
   protected String getConnectionSchemaName() {
     boolean flag = false;
-    String schemaName = null;
+    String schemaName = "";
     try {
       String tokens[] = super.getConnection().getURL().split(";");
       if(tokens.length > 1) {
@@ -127,11 +136,18 @@ public class HbaseDatabase extends AbstractJdbcDatabase {
         }
       }
     } catch (Exception e) {
-      LOG.debug("Unable to extract the schema name\t[ex: " + e.getMessage() + "]");
+      LOG.debug("Using \"\" (default) as schema name. "
+          + "Please use \"schema_name\" param to set specific schema name in driver url. "
+          + "For example, jdbc:phoenix:localhost;schema_name=<SCHEMA_NAME>:2181:/hbase" 
+          + "\t[ex: " + e.getMessage() + "]");
     }
     
     if(!flag) {
-      LOG.warning("Unable to extract the schema from url\t[url: " + super.getConnection().getURL() + "]");
+      LOG.warning("Using \"\" (default) as schema name. "
+          + "Please use \"schema_name\" param to set specific schema name in driver url. "
+          + "For example, jdbc:phoenix:localhost;schema_name=<SCHEMA_NAME>:2181:/hbase" 
+          + "\t[url: " + super.getConnection().getURL() + "]");
+
     }
     return schemaName;
   }
@@ -166,6 +182,10 @@ public class HbaseDatabase extends AbstractJdbcDatabase {
       return false;
   }
 
+  @Override
+  public CatalogAndSchema getSchemaFromJdbcInfo(String catalogName, String schemaName) {
+    return new CatalogAndSchema(null, schemaName);
+  }
 
   @Override
   public String escapeObjectName(String objectName, Class<? extends DatabaseObject> objectType) {
@@ -265,5 +285,21 @@ public class HbaseDatabase extends AbstractJdbcDatabase {
 	@Override
 	public String getTimeLiteral(Time date) {
 		return "'"+new SimpleDateFormat("hh:mm:ss.SSS").format(date)+"'";
+	}
+	
+	/**
+	 * Hbase allows table creation without any prefixing any schema name.
+	 * In this case, schema has been treated as "". Tables created under this 
+	 * schema can be accessed either by using only tablename or "".tablename.
+	 * To differentiate this schema and "null" schema in the code, this method
+	 * o/p constant has been used.
+	 * 
+	 * Schema.class in Liquibase Core trims empty schema and convert to "null" value,
+	 * which can be avoided using this constant for real "" or empty schema.
+	 * 
+	 * @return
+	 */
+	public String getNativeDefaultSchema() {
+	  return "HBASE_NATIVE_DEFAULT_SCHEMA";
 	}
 }

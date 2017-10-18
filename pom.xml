@@ -4,6 +4,7 @@
     <groupId>org.liquibase.ext</groupId>
     <artifactId>liquibase-hbase</artifactId>
     <name>Liquibase HBASE extension</name>
+    <url>https://github.com/manirajv06/liquibase-hbase</url>
     <version>0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <description>HBASE</description>
